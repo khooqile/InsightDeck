@@ -63,7 +63,7 @@ export default function Header({ onAuthModalOpen, onViewHistory, showHistoryLink
               onClick={onAuthModalOpen}
               className="px-4 py-2 bg-zinc-700 hover:bg-zinc-800 text-white text-sm font-medium rounded-md transition-colors"
             >
-              Sign In
+              sign in
             </button>
           )}
         </div>
