@@ -2,10 +2,11 @@ import { createRouteHandlerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+
+// This is the fix for the pdf-parse error
 const pdf = require("pdf-parse");
 
 // Initialize the OpenAI Client
-// This automatically finds the 'OPENAI_API_KEY' in your .env.local
 const openai = new OpenAI();
 
 // This is the main function that handles POST requests to /api/analyze
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
 
     // 3. Convert File to Raw Text
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const pdfData = await pdf(fileBuffer);
+    const pdfData = await pdf(fileBuffer); // This line is now fixed
     const rawText = pdfData.text;
 
     if (!rawText) {

@@ -48,7 +48,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         if (error) {
           setError(error.message);
         } else {
-          setSuccessMessage('Check your email for the confirmation link!');
+          setSuccessMessage('check your email for the confirmation link!');
           // Don't call onSuccess immediately for sign up as user needs to confirm email
           setTimeout(() => {
             handleClose();
@@ -98,13 +98,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-white mb-2">
-            {isSignUp ? 'Create Account' : 'Welcome Back'}
+          <h2 className="text-2xl font-mono font-bold text-white mb-2">
+            {isSignUp ? 'create account' : 'welcome back!'}
           </h2>
-          <p className="text-zinc-400">
+          <p className="text-zinc-400 font-mono">
             {isSignUp 
-              ? 'Sign up to save your analysis history' 
-              : 'Sign in to access your saved analyses'
+              ? 'sign up to save your analysis history' 
+              : 'sign in to access your saved analyses'
             }
           </p>
         </div>
@@ -113,36 +113,36 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Field */}
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-2">
+            <label className="block text-sm font-mono font-medium text-zinc-300 mb-2">
               Email
             </label>
-            <div className="relative">
+            <div className="relative font-mono">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-600 rounded-md text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-600 rounded-md text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent"
               />
             </div>
           </div>
 
           {/* Password Field */}
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-2">
+            <label className="block text-sm font-mono font-medium text-zinc-300 mb-2">
               Password
             </label>
-            <div className="relative">
+            <div className="relative font-mono">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder="enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full pl-10 pr-12 py-2 bg-zinc-800 border border-zinc-600 rounded-md text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full pl-10 pr-12 py-2 bg-zinc-800 border border-zinc-600 rounded-md text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent"
               />
               <button
                 type="button"
@@ -158,27 +158,27 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-600 text-white font-medium rounded-md transition-colors"
+            className="w-full py-2 px-4 font-mono bg-zinc-600 hover:bg-zinc-700 disabled:bg-zinc-600 text-white font-medium rounded-md transition-colors"
           >
-            {loading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
+            {loading ? 'Loading...' : (isSignUp ? 'create account' : 'sign in')}
           </button>
         </form>
 
         {/* Messages */}
         {error && (
           <div className="mt-4 p-3 bg-red-900/50 border border-red-700 rounded-md">
-            <p className="text-red-400 text-sm">{error}</p>
+            <p className="text-red-400 font-mono text-sm">{error}</p>
           </div>
         )}
 
         {successMessage && (
           <div className="mt-4 p-3 bg-emerald-900/50 border border-emerald-700 rounded-md">
-            <p className="text-emerald-400 text-sm">{successMessage}</p>
+            <p className="text-emerald-400 font-mono text-sm">{successMessage}</p>
           </div>
         )}
 
         {/* Toggle Between Sign In/Sign Up */}
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center font-mono">
           <button
             onClick={() => {
               setIsSignUp(!isSignUp);
@@ -188,8 +188,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             className="text-zinc-400 hover:text-white text-sm transition-colors"
           >
             {isSignUp 
-              ? 'Already have an account? Sign in' 
-              : "Don't have an account? Sign up"
+              ? 'already have an account? sign in' 
+              : "don't have an account? sign up"
             }
           </button>
         </div>
