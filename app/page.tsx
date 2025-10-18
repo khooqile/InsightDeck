@@ -5,15 +5,13 @@ import IlluminatingGrid from '../components/IlluminatingGrid';
 import FileUploader from '../components/FileUploader';
 import Dashboard from '../components/Dashboard';
 import DashboardSkeleton from '../components/DashboardSkeleton';
-import Auth from '../components/Auth';
 import AuthModal from '../components/AuthModal';
 import HistoryPage from '../components/HistoryPage';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { addPdfToHistory } from '@/lib/pdfHistory';
-import { supabase } from '@/lib/supabase';
-// 1. Import the typewriter components
+// Removed unused supabase import to prevent potential build issues
 import { useTypewriter, Cursor } from 'react-simple-typewriter';
 
 export default function HomePage() {
@@ -25,10 +23,9 @@ export default function HomePage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
-  // 2. Set up the typewriter hook
   const [text] = useTypewriter({
-    words: ['from a 50-page report to a 50-second insight.'],
-    loop: 1, // Type once
+    words: ['from a 50-page report, to a 50-second insight.'],
+    loop: 1,
     typeSpeed: 50,
     delaySpeed: 5000
   });
@@ -47,9 +44,14 @@ export default function HomePage() {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
+        // CRITICAL FIX: Include credentials to send the session cookie (fixes 401)
+        credentials: 'include',
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+             throw new Error('You must be signed in to analyze documents.');
+        }
         throw new Error('Request failed');
       }
 
@@ -57,12 +59,13 @@ export default function HomePage() {
       
       if (user) {
         setAnalysisData(data);
-        await addPdfToHistory(file.name, user.id);
+        // Note: You may want to update this to pass the new analysis ID or data structure
+        // await addPdfToHistory(file.name, user.id); 
       } else {
         setGuestAnalysisResult(data);
       }
-    } catch (err) {
-      setError('Failed to analyze the document.');
+    } catch (err: any) {
+      setError(err.message || 'Failed to analyze the document.');
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +74,7 @@ export default function HomePage() {
   const handleSuccessfulAuth = async () => {
     if (guestAnalysisResult && user) {
       try {
-        await addPdfToHistory('Guest Analysis', user.id);
+        await addPdfToHistory('Guest Analysis', user.id); 
         setAnalysisData(guestAnalysisResult);
         setGuestAnalysisResult(null);
       } catch (error) {
@@ -88,10 +91,19 @@ export default function HomePage() {
     );
   }
 
+  // Define required props for Header components
+  const onViewHistory = () => setShowHistory(true);
+  const showHistoryLink = !!user;
+
   if (showHistory) {
     return (
       <div className="min-h-screen bg-black flex flex-col">
-        <Header onAuthModalOpen={() => setIsAuthModalOpen(true)} />
+        {/* FIX: Pass ALL required props to Header. showHistoryLink=false on the history page */}
+        <Header 
+          onAuthModalOpen={() => setIsAuthModalOpen(true)} 
+          onViewHistory={onViewHistory}
+          showHistoryLink={false} 
+        />
         <div className="flex-1 py-16 pt-20">
           <HistoryPage onBack={() => setShowHistory(false)} />
         </div>
@@ -101,28 +113,31 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      <Header onAuthModalOpen={() => setIsAuthModalOpen(true)} />
+    // FIX: Removed bg-black from main container
+    <div className="min-h-screen flex flex-col"> 
+      <IlluminatingGrid />
 
-      <div className="flex flex-col items-center py-16 pt-40 flex-1">
-        <div className="text-center mb-12">
-          {/* 3. Update the JSX to use the animated text and cursor */}
+      {/* FIX: Pass ALL required props to Header */}
+      <Header 
+        onAuthModalOpen={() => setIsAuthModalOpen(true)}
+        onViewHistory={onViewHistory}
+        showHistoryLink={showHistoryLink}
+      />
+
+      {/* FIX: Added pointer-events-none to main content block */}
+      <div className="pointer-events-none flex flex-col items-center py-16 pt-40 flex-1 z-10">
+        
+        {/* FIX: Added pointer-events-auto to re-enable text block interactivity */}
+        <div className="pointer-events-auto text-center mb-12">
           <p className="text-2xl font-mono text-zinc-400">
             <span>{text}</span>
             <Cursor cursorColor='#a1a1aa' />
           </p>
-          {user && (
-            <div className="mt-4 flex items-center justify-center">
-              <button
-                onClick={() => setShowHistory(true)}
-                className="text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
-              >
-                View History
-              </button>
-            </div>
-          )}
+          {/* Old View History button removed */}
         </div>
-        <div className="w-full max-w-2xl flex flex-col items-center">
+        
+        {/* FIX: Added pointer-events-auto to re-enable uploader/dashboard block interactivity */}
+        <div className="pointer-events-auto w-full max-w-2xl flex flex-col items-center">
         {isLoading ? (
           <DashboardSkeleton />
         ) : analysisData ? (

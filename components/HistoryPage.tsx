@@ -30,12 +30,12 @@ export default function HistoryPage({ onBack }: HistoryPageProps) {
         .order('analyzed_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching history:', error);
+        console.error('error fetching history:', error);
       } else {
         setHistory(data || []);
       }
     } catch (error) {
-      console.error('Error fetching history:', error);
+      console.error('error fetching history:', error);
     } finally {
       setLoading(false);
     }
@@ -59,24 +59,24 @@ export default function HistoryPage({ onBack }: HistoryPageProps) {
           className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Analysis
+          back to analysis
         </button>
-        <h2 className="text-2xl font-bold text-white mb-2">PDF Analysis History</h2>
-        <p className="text-zinc-400">Your previously analyzed documents</p>
+        <h2 className="text-2xl text-center font-mono font-bold text-white mb-2">history</h2>
+        {/* <p className="text-zinc-400">your previously analysed documents</p> */}
       </div>
 
       {loading ? (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-          <p className="text-zinc-400 mt-2">Loading history...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-500 mx-auto"></div>
+          <p className="text-zinc-400 font-mono mt-2">loading history...</p>
         </div>
       ) : history.length === 0 ? (
         <Card className="bg-zinc-900/50 border-zinc-700">
           <CardContent className="text-center py-8">
             <FileText className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
-            <p className="text-zinc-400">No analysis history found</p>
-            <p className="text-zinc-500 text-sm mt-1">
-              Upload and analyze your first PDF to see it here
+            <p className="text-zinc-400 font-mono">no analysis history found</p>
+            <p className="text-zinc-500 text-sm mt-1 font-mono">
+              upload your first PDF to see it here
             </p>
           </CardContent>
         </Card>

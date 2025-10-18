@@ -12,13 +12,13 @@ export async function addPdfToHistory(pdfName: string, userId: string) {
       ]);
 
     if (error) {
-      console.error('Error adding PDF to history:', error);
+      console.error('error adding PDF to history:', error);
       return { success: false, error };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error adding PDF to history:', error);
+    console.error('error adding PDF to history:', error);
     return { success: false, error };
   }
 }
