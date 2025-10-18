@@ -4,7 +4,7 @@ import React from 'react';
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-zinc-400 px-6 py-6">
+    <footer className="bg-black font-mono text-sm text-zinc-400 px-6 py-6">
       <div className="flex flex-col items-center justify-center space-y-1">
         {/* Navigation Links and Copyright */}
         <div className="flex items-center">

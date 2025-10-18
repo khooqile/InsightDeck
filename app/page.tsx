@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import type { AnalysisData } from '../mock-data';
+import IlluminatingGrid from '../components/IlluminatingGrid';
 import FileUploader from '../components/FileUploader';
 import Dashboard from '../components/Dashboard';
 import DashboardSkeleton from '../components/DashboardSkeleton';
@@ -12,6 +13,8 @@ import Footer from '../components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { addPdfToHistory } from '@/lib/pdfHistory';
 import { supabase } from '@/lib/supabase';
+// 1. Import the typewriter components
+import { useTypewriter, Cursor } from 'react-simple-typewriter';
 
 export default function HomePage() {
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
@@ -21,6 +24,15 @@ export default function HomePage() {
   const [showHistory, setShowHistory] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, loading: authLoading } = useAuth();
+
+  // 2. Set up the typewriter hook
+  const [text] = useTypewriter({
+    words: ['from a 50-page report to a 50-second insight.'],
+    loop: 1, // Type once
+    typeSpeed: 50,
+    delaySpeed: 5000
+  });
+
 
   const handleFileUpload = async (file: File) => {
     setIsLoading(true);
@@ -43,13 +55,10 @@ export default function HomePage() {
 
       const data = await response.json();
       
-      // Store analysis result based on user authentication status
       if (user) {
         setAnalysisData(data);
-        // Add PDF to history if user is authenticated
         await addPdfToHistory(file.name, user.id);
       } else {
-        // Store result for guest user
         setGuestAnalysisResult(data);
       }
     } catch (err) {
@@ -59,14 +68,10 @@ export default function HomePage() {
     }
   };
 
-  // Handle successful authentication and save guest analysis
   const handleSuccessfulAuth = async () => {
     if (guestAnalysisResult && user) {
       try {
-        // Save the guest analysis to the user's history
         await addPdfToHistory('Guest Analysis', user.id);
-        
-        // Move guest analysis to authenticated user's analysis data
         setAnalysisData(guestAnalysisResult);
         setGuestAnalysisResult(null);
       } catch (error) {
@@ -75,7 +80,6 @@ export default function HomePage() {
     }
   };
 
-  // Show loading while auth is being determined
   if (authLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -84,16 +88,13 @@ export default function HomePage() {
     );
   }
 
-  // Show history page if requested
   if (showHistory) {
     return (
       <div className="min-h-screen bg-black flex flex-col">
         <Header onAuthModalOpen={() => setIsAuthModalOpen(true)} />
-        
         <div className="flex-1 py-16 pt-20">
           <HistoryPage onBack={() => setShowHistory(false)} />
         </div>
-        
         <Footer />
       </div>
     );
@@ -103,11 +104,12 @@ export default function HomePage() {
     <div className="min-h-screen bg-black flex flex-col">
       <Header onAuthModalOpen={() => setIsAuthModalOpen(true)} />
 
-      {/* Main Content */}
-      <div className="flex flex-col items-center py-16 pt-25 flex-1">
-        <div className="text-center mb-7">
-          <p className="text-lg font-mono text-zinc-400">
-            from a 50-page transcript to a 1-minute insight.
+      <div className="flex flex-col items-center py-16 pt-40 flex-1">
+        <div className="text-center mb-12">
+          {/* 3. Update the JSX to use the animated text and cursor */}
+          <p className="text-2xl font-mono text-zinc-400">
+            <span>{text}</span>
+            <Cursor cursorColor='#a1a1aa' />
           </p>
           {user && (
             <div className="mt-4 flex items-center justify-center">
@@ -120,7 +122,7 @@ export default function HomePage() {
             </div>
           )}
         </div>
-      <div className="w-full max-w-2xl flex flex-col items-center">
+        <div className="w-full max-w-2xl flex flex-col items-center">
         {isLoading ? (
           <DashboardSkeleton />
         ) : analysisData ? (
@@ -128,7 +130,6 @@ export default function HomePage() {
         ) : guestAnalysisResult ? (
           <>
             <Dashboard data={guestAnalysisResult} />
-            {/* Guest Call to Action */}
             <div className="mt-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-lg text-center">
               <h3 className="text-lg font-semibold text-white mb-2">
                 Sign up to save your analysis history
@@ -155,7 +156,6 @@ export default function HomePage() {
         </div>
       </div>
       
-      {/* Auth Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}

@@ -49,8 +49,8 @@ export default function FileUploader({ onFileUpload, loading }: FileUploaderProp
         </>
       ) : (
         <>
-          <UploadCloud className="h-8 w-8 text-zinc-400" />
-          <p className="text-zinc-300 text-sm font-medium text-center px-4">
+          <UploadCloud className="h-6 w-8 text-zinc-400" />
+          <p className="text-zinc-300 text-sm font-mono font-medium text-center px-4">
             {isDragActive ? 'Drop the file here!' : 'drag & drop, or click to select'}
           </p>
         </>
