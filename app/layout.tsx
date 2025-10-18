@@ -6,7 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata = {
   title: "InsightDeck",
-  description: "from a 50-page transcript, to a 1-minute insight.",
+  description: "from a 50-page transcript, to a 50-second insight.",
 };
 
 export default function RootLayout({

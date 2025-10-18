@@ -1,7 +1,7 @@
 // mock-data.ts
 export const mockAnalysisData = {
     summary: "The company reported strong quarterly earnings, beating analyst expectations on revenue and profit. However, future guidance was cautious due to anticipated supply chain constraints, which concerned investors.",
-    overall_sentiment: "Bullish",
+    overall_sentiment: "bullish",
     score: 82,
     topics: [
       { topic: "Revenue Growth", sentiment: "Positive" },
