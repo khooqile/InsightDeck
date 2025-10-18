@@ -1,103 +1,168 @@
-import Image from "next/image";
+"use client";
+import React, { useState } from 'react';
+import type { AnalysisData } from '../mock-data';
+import FileUploader from '../components/FileUploader';
+import Dashboard from '../components/Dashboard';
+import DashboardSkeleton from '../components/DashboardSkeleton';
+import Auth from '../components/Auth';
+import AuthModal from '../components/AuthModal';
+import HistoryPage from '../components/HistoryPage';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { useAuth } from '@/contexts/AuthContext';
+import { addPdfToHistory } from '@/lib/pdfHistory';
+import { supabase } from '@/lib/supabase';
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+export default function HomePage() {
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [guestAnalysisResult, setGuestAnalysisResult] = useState<AnalysisData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user, loading: authLoading } = useAuth();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleFileUpload = async (file: File) => {
+    setIsLoading(true);
+    setError(null);
+    setAnalysisData(null);
+    setGuestAnalysisResult(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const data = await response.json();
+      
+      // Store analysis result based on user authentication status
+      if (user) {
+        setAnalysisData(data);
+        // Add PDF to history if user is authenticated
+        await addPdfToHistory(file.name, user.id);
+      } else {
+        // Store result for guest user
+        setGuestAnalysisResult(data);
+      }
+    } catch (err) {
+      setError('Failed to analyze the document.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle successful authentication and save guest analysis
+  const handleSuccessfulAuth = async () => {
+    if (guestAnalysisResult && user) {
+      try {
+        // Save the guest analysis to the user's history
+        await addPdfToHistory('Guest Analysis', user.id);
+        
+        // Move guest analysis to authenticated user's analysis data
+        setAnalysisData(guestAnalysisResult);
+        setGuestAnalysisResult(null);
+      } catch (error) {
+        console.error('Error saving guest analysis:', error);
+      }
+    }
+  };
+
+  // Show loading while auth is being determined
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  // Show history page if requested
+  if (showHistory) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col">
+        <Header onAuthModalOpen={() => setIsAuthModalOpen(true)} />
+        
+        <div className="flex-1 py-16 pt-20">
+          <HistoryPage onBack={() => setShowHistory(false)} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black flex flex-col">
+      <Header onAuthModalOpen={() => setIsAuthModalOpen(true)} />
+
+      {/* Main Content */}
+      <div className="flex flex-col items-center py-16 pt-25 flex-1">
+        <div className="text-center mb-7">
+          <p className="text-lg font-mono text-zinc-400">
+            from a 50-page transcript to a 1-minute insight.
+          </p>
+          {user && (
+            <div className="mt-4 flex items-center justify-center">
+              <button
+                onClick={() => setShowHistory(true)}
+                className="text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+              >
+                View History
+              </button>
+            </div>
+          )}
+        </div>
+      <div className="w-full max-w-2xl flex flex-col items-center">
+        {isLoading ? (
+          <DashboardSkeleton />
+        ) : analysisData ? (
+          <Dashboard data={analysisData} />
+        ) : guestAnalysisResult ? (
+          <>
+            <Dashboard data={guestAnalysisResult} />
+            {/* Guest Call to Action */}
+            <div className="mt-8 p-6 bg-zinc-900/50 border border-zinc-700 rounded-lg text-center">
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Sign up to save your analysis history
+              </h3>
+              <p className="text-zinc-400 mb-4">
+                Create an account to save this analysis and access your history anytime.
+              </p>
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md transition-colors"
+              >
+                Save to Account
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <FileUploader onFileUpload={handleFileUpload} loading={isLoading} />
+            {error && (
+              <p className="mt-6 text-red-500 font-medium">{error}</p>
+            )}
+          </>
+        )}
+        </div>
+      </div>
+      
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleSuccessfulAuth}
+      />
+      
+      <Footer />
     </div>
   );
 }
