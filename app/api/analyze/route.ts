@@ -1,10 +1,10 @@
-import { createRouteHandlerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { createRouteHandlerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import OpenAI from "openai";
 
 // This is the fix for the pdf-parse error
-const pdf = require('pdf-parse');
+const pdf = require("pdf-parse");
 
 // Initialize the OpenAI Client
 const openai = new OpenAI();
@@ -19,10 +19,10 @@ export async function POST(request: Request) {
   try {
     // 1. Get the FormData from the request
     const formData = await request.formData();
-    const file = formData.get('file') as File | null;
+    const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
+      return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
     }
 
     // 2. Get the User's ID (Security Check)
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) {
-      return NextResponse.json({ error: 'Not authorized.' }, { status: 401 });
+      return NextResponse.json({ error: "Not authorized." }, { status: 401 });
     }
     const userId = session.user.id;
 
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     if (!rawText) {
       return NextResponse.json(
-        { error: 'Could not parse text from PDF.' },
+        { error: "Could not parse text from PDF." },
         { status: 500 }
       );
     }
@@ -102,36 +102,36 @@ export async function POST(request: Request) {
 
     // 5. Call OpenAI and get the JSON
     const aiResponse = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Fast, smart, and cheap
-      response_format: { type: 'json_object' }, // Force JSON output
+      model: "gpt-4o-mini", // Fast, smart, and cheap
+      response_format: { type: "json_object" }, // Force JSON output
       messages: [
         {
-          role: 'system',
-          content: 'You are a financial analyst outputting JSON.',
+          role: "system",
+          content: "You are a financial analyst outputting JSON.",
         },
-        { role: 'user', content: prompt },
+        { role: "user", content: prompt },
       ],
     });
 
     const jsonResponse = JSON.parse(
-      aiResponse.choices[0].message.content || '{}'
+      aiResponse.choices[0].message.content || "{}"
     );
 
     // 6. Save the AI's JSON to the database
     const { data: newAnalysis, error: dbError } = await supabase
-      .from('analyses')
+      .from("analyses")
       .insert({
         user_id: userId,
         file_name: file.name,
         dashboard_data: jsonResponse, // Save the entire JSON object
       })
-      .select('id') // Ask Supabase to return just the 'id' of the new row
+      .select("id") // Ask Supabase to return just the 'id' of the new row
       .single(); // We only expect one row back
 
     if (dbError) {
-      console.error('Database Error:', dbError);
+      console.error("Database Error:", dbError);
       return NextResponse.json(
-        { error: 'Could not save analysis.' },
+        { error: "Could not save analysis." },
         { status: 500 }
       );
     }
@@ -142,7 +142,7 @@ export async function POST(request: Request) {
     console.error(error);
     // Handle any unexpected errors
     return NextResponse.json(
-      { error: 'An internal server error occurred.' },
+      { error: "An internal server error occurred." },
       { status: 500 }
     );
   }
